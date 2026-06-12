@@ -1,0 +1,13 @@
+<div class="container mt-5">
+    <div class="card border-danger shadow">
+        <div class="card-body text-center">
+            <h3>確定要刪除這筆報修嗎？</h3>
+            <p class="text-muted">報修編號：#{{ repair.id }} - {{ repair.username }}</p>
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">確定刪除</button>
+                <a href="{% url 'repair_list' %}" class="btn btn-secondary">取消</a>
+            </form>
+        </div>
+    </div>
+</div>

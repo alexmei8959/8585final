@@ -1,0 +1,122 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+{% block title %}雙因素認證 | 夢串流{% endblock title %}
+{% block body_class %}ds-login-page{% endblock body_class %}
+
+{% block body_content %}
+<div class="ds-login-wrapper">
+    <div class="ds-login">
+        <div class="ds-login-left">
+            <div class="ds-login-inner">
+
+                <!-- Logo + Title -->
+                <img class="ds-login-logo mb-2"
+                     src="{% static 'images/brands/breadoflife.png' %}"
+                     alt="Bread of Life">
+
+                <h1 class="ds-login-title">夢串流</h1>
+                <p class="text-muted mb-4">雙因素認證</p>
+
+                <!-- Info Card -->
+                <div class="ds-login-card mb-4">
+                    <p class="text-muted mb-0">
+                        為了您的帳戶安全，請輸入 6 位數認證碼
+                    </p>
+                </div>
+
+                <!-- Form -->
+                <form method="POST" action="">
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                    <div class="ds-error mb-3">
+                        {% for error in form.non_field_errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <div class="ds-field">
+                        <label for="id_otpcode" class="ds-label">認證碼</label>
+
+                        {% if form.otpcode.errors %}
+                            <div class="ds-error mb-2">
+                                {% for error in form.otpcode.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        <div class="ds-input-wrap">
+                            <i class="ri-shield-keyhole-line ds-input-icon"></i>
+                            <input
+                                type="text"
+                                id="id_otpcode"
+                                name="otpcode"
+                                class="ds-input"
+                                inputmode="numeric"
+                                pattern="[0-9]*"
+                                placeholder="請輸入6位數認證碼"
+                                maxlength="6"
+                                required
+                                autocomplete="one-time-code"
+                            >
+                        </div>
+                    </div>
+
+                    <button class="ds-submit mt-3 d-flex justify-content-center align-items-center"
+                            type="submit"
+                            id="id_submit">
+                        <span class="spinner-border spinner-border-sm me-2 d-none"
+                              role="status"
+                              id="spinner"></span>
+                        <span id="button-text">送出驗證</span>
+                    </button>
+
+                </form>
+            </div>
+
+            <!-- Footer -->
+            <div class="ds-login-meta">
+                <a href="{% url 'accounts:login' %}" class="accounts-link">
+                    ← 回到登入
+                </a>
+                <div class="ds-login-footer">© 2026 台北靈糧堂</div>
+            </div>
+        </div>
+
+        <!-- Right Image -->
+        <div class="ds-login-right">
+            <img class="ds-login-image"
+                 src="{% static 'images/brands/dreamstream.png' %}"
+                 alt="Dreamstream">
+        </div>
+    </div>
+</div>
+{% endblock body_content %}
+
+{% block extra_js %}
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const form = document.querySelector("form");
+            const submitButton = document.getElementById("id_submit");
+            const spinner = document.getElementById("spinner");
+            const buttonText = document.getElementById("button-text");
+            const otpInput = document.getElementById("id_otpcode");
+
+            // 限制只能輸入數字
+            if (otpInput) {
+                otpInput.addEventListener("input", () => {
+                    otpInput.value = otpInput.value.replace(/[^0-9]/g, "");
+                });
+            }
+
+            form.addEventListener("submit", function () {
+                submitButton.disabled = true;
+                spinner.classList.remove("d-none");
+                buttonText.classList.add("d-none");
+            });
+        });
+    </script>
+{% endblock extra_js %}

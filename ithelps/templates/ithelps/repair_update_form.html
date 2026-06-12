@@ -1,0 +1,140 @@
+{% extends 'partials/base.html' %}
+{% block title %}編輯報修單{% endblock title %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+            <div class="container mt-4">
+                <h2>✏️ 編輯叫修事項</h2>
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {% if form.errors %}
+                        <div class="alert alert-danger">
+                            <strong>發生錯誤：</strong>
+                            {{ form.errors }}
+                        </div>
+                    {% endif %}
+                    <div class="mb-3">
+                        <label class="form-label">姓名</label>
+                        {{ form.username }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">報修地點</label>
+                        {{ form.location }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">叫修事項</label>
+                        {{ form.description }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">處理狀態</label>
+                        {{ form.status }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">處理人</label>
+                        {{ form.handler_name }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">維修過程/結果紀錄</label>
+                        {{ form.resolution_notes }}
+                    </div>
+
+                    <hr>
+                    <h5>目前上傳的圖片 / 影片（勾選可刪除）</h5>
+                    <div class="d-flex flex-wrap gap-3 mb-3">
+                    {% for file in repair.files.all %}
+                        <div class="text-center border p-2 rounded" style="width: 120px;">
+                            <div style="height: 80px; overflow: hidden;" class="mb-2">
+                                {% if ".mp4" in file.file_path.name|lower or ".mov" in file.file_path.name|lower or ".avi" in file.file_path.name|lower %}
+                                    <div class="bg-dark text-white d-flex align-items-center justify-content-center h-100"
+                                         style="cursor: pointer;"
+                                         data-bs-toggle="modal"
+                                         data-bs-target="#imageModal"
+                                         data-type="video"
+                                         data-src="{{ file.file_path.url }}">
+                                        <small>📹 影片</small>
+                                    </div>
+                                {% else %}
+                                    <img src="{{ file.file_path.url }}"
+                                         class="img-fluid h-100 w-100"
+                                         style="object-fit: cover; cursor: pointer;"
+                                         data-bs-toggle="modal"
+                                         data-bs-target="#imageModal"
+                                         data-type="image"
+                                         data-src="{{ file.file_path.url }}">
+                                {% endif %}
+                            </div>
+
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="delete_files" value="{{ file.id }}" id="del{{ file.id }}">
+                                <label class="form-check-label text-danger" for="del{{ file.id }}">刪除</label>
+                            </div>
+                        </div>
+                    {% endfor %}
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">重新上傳 / 新增附件 (可多選)</label>
+                        <input type="file" name="new_files" class="form-control" multiple>
+                        <small class="text-muted">按住 Ctrl 或 Shift 鍵可一次選擇多個檔案</small>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">儲存所有修改</button>
+                    <a href="{% url 'ithelps:repair_list' %}" class="btn btn-link w-100 mt-2">回列表</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content bg-dark border-0">
+            <div class="modal-header border-0 pb-0">
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-3 text-center">
+                <img src="" id="modalImage" class="img-fluid rounded d-none" style="max-height: 80vh;">
+                <video id="modalVideo" controls class="img-fluid rounded d-none" style="max-height: 80vh;">
+                    <source src="" type="video/mp4">
+                </video>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var imageModal = document.getElementById('imageModal');
+    if (imageModal) {
+        var modalImage = document.getElementById('modalImage');
+        var modalVideo = document.getElementById('modalVideo');
+
+        imageModal.addEventListener('show.bs.modal', function (event) {
+            var trigger = event.relatedTarget;
+            var type = trigger.getAttribute('data-type');
+            var src = trigger.getAttribute('data-src');
+
+            modalImage.classList.add('d-none');
+            modalVideo.classList.add('d-none');
+            modalVideo.pause();
+
+            if (type === 'video') {
+                modalVideo.src = src;
+                modalVideo.classList.remove('d-none');
+                modalVideo.load();
+            } else {
+                modalImage.src = src;
+                modalImage.classList.remove('d-none');
+            }
+        });
+
+        imageModal.addEventListener('hidden.bs.modal', function () {
+            modalVideo.pause();
+            modalVideo.src = "";
+        });
+    }
+});
+</script>
+{% endblock content %}

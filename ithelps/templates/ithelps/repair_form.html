@@ -1,0 +1,41 @@
+{% extends 'partials/base.html' %}
+{% block title %}填寫報修單{% endblock title %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+            <div class="container mt-4">
+                <h2>➕ 新增報修事項</h2>
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {% if form.errors %}
+                        <div class="alert alert-danger">
+                            <strong>發生錯誤：</strong>
+                            {{ form.errors }}
+                        </div>
+                    {% endif %}
+                    <div class="mb-3">
+                        <label class="form-label">姓名</label>
+                        {{ form.username }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">報修地點</label>
+                        {{ form.location }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">叫修事項</label>
+                        {{ form.description }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">上傳圖片/影片 (可多選)</label>
+                        <input type="file" name="image" class="form-control" multiple>
+                    </div>
+                    <button type="submit" class="btn btn-success w-100">送出報修</button>
+                    <a href="{% url 'ithelps:repair_list' %}" class="btn btn-link w-100 mt-2">回列表</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

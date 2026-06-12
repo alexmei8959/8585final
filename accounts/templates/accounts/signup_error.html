@@ -1,0 +1,35 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+
+{% block title %}註冊錯誤{% endblock title %}
+
+{% block body_class %}ds-login-page{% endblock body_class %}
+
+{% block body_content %}
+<div class="ds-login-wrapper">
+    <div class="ds-login">
+        <div class="ds-login-left">
+            <div class="ds-login-inner">
+                <img class="ds-login-logo mb-2" src="{% static 'images/brands/breadoflife.png' %}" alt="Bread of Life">
+                <h1 class="ds-login-title">夢串流-註冊錯誤</h1>
+                <div class="ds-error-message">
+                    <div class="mb-4 text-center">
+                        <i class="ri-error-warning-line" style="font-size: 72px; color: #dc3545;"></i>
+                    </div>
+                    <p class="text-center text-danger">{{ message }}</p>
+                    <p class="text-center text-muted">請確認您的註冊連結是否正確，或聯繫管理員取得新的註冊連結。</p>
+                </div>
+                <div class="mt-4 text-center">
+                    <a href="{% url 'accounts:login' %}" class="ds-submit">返回登入頁面</a>
+                </div>
+            </div>
+            <div class="ds-login-meta">
+                <div class="ds-login-footer">© 2026 台北靈糧堂</div>
+            </div>
+        </div>
+        <div class="ds-login-right">
+            <img class="ds-login-image" src="{% static 'images/brands/dreamstream.png' %}" alt="Dreamstream">
+        </div>
+    </div>
+</div>
+{% endblock body_content %}

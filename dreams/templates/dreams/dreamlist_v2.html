@@ -1,0 +1,342 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+{% block title %}夢串流主頁面{% endblock title %}
+
+{% block extra_css %}
+    <!-- select2 -->
+    <link href="{% static 'libs/select2/dist/select2.min.css' %}" rel="stylesheet" type="text/css"/>
+    <!-- glightbox css -->
+    <link rel="stylesheet" href="{% static 'libs/glightbox/dist/css/glightbox.min.css'%}">
+    <!-- dropzone css -->
+    <link rel="stylesheet" href="{% static 'libs/dropzone/dist/dropzone.css'%}">
+{% endblock extra_css %}
+
+{% block content %}
+<div class="main-content ds-feed-page">
+    <div class="page-content">
+
+        {# 設定資料供 JS 讀取（無 inline script，符合 CSP） #}
+        <div id="ds-config"
+             data-dream-api="/dreams/dream/"
+             data-dream-ui-api="/dreams/dream/ui/"
+             data-reply-url="{% url 'dreams:dream-reply' %}"
+             data-csrf="{{ csrf_token }}"
+             data-user-id="{{ request.user.id }}"
+             data-username="{{ request.user.first_name }}"
+             data-user-role="{{ request.user.userprofile.role_id|default:'3' }}"
+             data-init-folder="{{ init_folder }}"
+             hidden></div>
+
+        <div class="ds-feed-container">
+
+            {# 頂部工具列 #}
+            <div class="ds-feed-topbar">
+                <h1 class="ds-feed-topbar-title">夢串流</h1>
+                <div class="ds-topbar-right">
+                    {# 視圖切換按鈕 #}
+                    <div class="ds-view-toggle" role="group" aria-label="顯示方式">
+                        <button class="ds-view-btn" data-view="grid" aria-label="格狀模式" title="格狀">
+                            <i class="ri-grid-line" aria-hidden="true"></i>
+                        </button>
+                        <button class="ds-view-btn" data-view="list" aria-label="條列模式" title="條列">
+                            <i class="ri-list-check-2" aria-hidden="true"></i>
+                        </button>
+                        <button class="ds-view-btn" data-view="table" aria-label="清單模式" title="清單">
+                            <i class="ri-table-line" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                    <button class="ds-icon-btn" id="ds-search-toggle" aria-label="搜尋夢境">
+                        <i class="ri-search-line"></i>
+                    </button>
+                </div>
+            </div>
+
+            {# 搜尋列（預設隱藏，點放大鏡展開） #}
+            <div class="ds-search-bar" id="ds-search-bar" hidden>
+                <div class="ds-search-wrap">
+                    <i class="ri-search-line ds-search-icon"></i>
+                    <input type="text" id="ds-search-input" class="ds-search-input"
+                           placeholder="搜尋夢境主題、類別或作者..." autocomplete="off">
+                    <button class="ds-icon-btn ds-icon-btn-sm" id="ds-search-close" aria-label="關閉搜尋">
+                        <i class="ri-close-line"></i>
+                    </button>
+                </div>
+            </div>
+
+            {# 分享夢境提示卡 #}
+            {% if request.user.userprofile.role_id != 4 %}
+            <div class="ds-share-card">
+                <div class="ds-share-prompt" id="ds-share-open" role="button" tabindex="0"
+                     aria-haspopup="dialog" aria-label="分享你的夢境">
+                    <div class="ds-share-avatar" aria-hidden="true">
+                        <i class="ri-user-3-line"></i>
+                    </div>
+                    <div class="ds-share-placeholder">分享你的夢境...</div>
+                    <div class="ds-share-btn" aria-hidden="true">
+                        <i class="ri-quill-pen-line"></i>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {# 排序列 #}
+            <div class="ds-sort-bar" id="ds-sort-bar" role="group" aria-label="排序方式">
+                <button class="ds-sort-btn ds-sort-active" data-sort="dream_date">做夢日期</button>
+                <button class="ds-sort-btn" data-sort="create_date">分享日期</button>
+                <button class="ds-sort-btn" data-sort="follow_count">關注度</button>
+                <button class="ds-sort-btn" data-sort="reply_count">回應數</button>
+                <div class="dropdown ms-auto">
+                    <button class="ds-filter-btn" id="ds-filter-toggle"
+                            data-bs-toggle="dropdown" aria-expanded="false" aria-label="篩選">
+                        <i class="ri-filter-3-line"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end ds-filter-menu" id="ds-filter-menu">
+                        <li>
+                            <button class="dropdown-item ds-filter-item ds-filter-active" data-filter="all">
+                                <i class="ri-apps-line"></i>全部
+                            </button>
+                        </li>
+
+                        <li>
+                            <button class="dropdown-item ds-filter-item" data-filter="followed">
+                                <i class="ri-heart-line"></i>我關注的
+                            </button>
+                        </li>
+                        <li>
+                            <button class="dropdown-item ds-filter-item" data-filter="mine">
+                                <i class="ri-user-line"></i>我分享的
+                            </button>
+                        </li>
+                        {% if request.user.userprofile.role_id <= 1 %}
+                        <li>
+                            <button class="dropdown-item ds-filter-item" data-filter="interpreted">
+                                <i class="ri-question-mark"></i>未解的夢
+                            </button>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+
+            {# 夢境動態列表 #}
+            <div id="ds-feed-list">
+                <div class="ds-feed-loading">
+                    <div class="spinner-border ds-spinner" role="status">
+                        <span class="visually-hidden">載入中...</span>
+                    </div>
+                    <p class="ds-loading-text">正在載入夢境...</p>
+                </div>
+            </div>
+
+        </div>{# /.ds-feed-container #}
+    </div>{# /.page-content #}
+</div>{# /.main-content #}
+
+{# ───────── 分享夢境 Modal ───────── #}
+<div class="modal fade" id="ds-share-modal" tabindex="-1"
+     aria-labelledby="ds-share-modal-label" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable ds-modal-dialog">
+        <div class="modal-content ds-modal-content">
+            <div class="modal-header ds-modal-header">
+                <h5 class="modal-title ds-modal-title" id="ds-share-modal-label">
+                    <i class="ri-quill-pen-line me-2" id="ds-modal-icon" aria-hidden="true"></i>
+                    <span id="ds-modal-title-text">分享夢境</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
+            </div>
+            <form id="ds-share-form" novalidate>
+                <input type="hidden" id="ds-edit-id" value="">
+                <div class="modal-body ds-modal-body">
+
+                    <div class="ds-form-group">
+                        <label class="ds-form-label" for="ds-input-title">
+                            主題 <span class="ds-required" aria-hidden="true">*</span>
+                        </label>
+                        <input type="text" id="ds-input-title" class="ds-form-input"
+                               placeholder="這個夢的主題..." maxlength="120" required>
+                    </div>
+
+                    <div class="ds-form-group">
+                        <label class="ds-form-label" for="ds-input-date">做夢日期 <span class="ds-required" aria-hidden="true">*</span></label>
+                        <input type="date" id="ds-input-date" class="ds-form-input" required>
+                    </div>
+
+                    <div class="ds-form-group">
+                        <label class="ds-form-label" for="ds-input-parent">
+                            主題方向 <span class="ds-required" aria-hidden="true">*</span>
+                        </label>
+                        <select id="ds-input-parent" class="ds-form-input ds-form-select" required>
+                            <option value="" disabled selected>請選擇主題方向...</option>
+                        </select>
+                    </div>
+
+                    <div class="ds-form-group">
+                        <label class="ds-form-label" for="ds-input-content">內容 <span class="ds-required" aria-hidden="true">*</span></label>
+                        <textarea id="ds-input-content" class="ds-form-textarea" rows="4"
+                                  placeholder="描述你的夢境..." required></textarea>
+                    </div>
+
+                    <div class="ds-form-group">
+                        <label class="ds-form-label" for="ds-input-interpretation">
+                            個人解讀／夢語言解釋
+                        </label>
+                        <textarea id="ds-input-interpretation" class="ds-form-textarea" rows="3"
+                                  placeholder="個人的解讀或夢語言解釋..."></textarea>
+                    </div>
+
+                    <div class="ds-form-group">
+                        <label class="ds-form-label" for="ds-input-revelation">禱告方向</label>
+                        <textarea id="ds-input-revelation" class="ds-form-textarea" rows="3"
+                                  placeholder="這個夢的禱告方向..."></textarea>
+                    </div>
+
+                    <div class="ds-form-group" style="position: relative;">
+                        <label class="ds-form-label" for="ds-input-hashtags">標籤</label>
+                        <input type="text" id="ds-input-hashtags" class="ds-form-input"
+                               placeholder="用 # 分隔標籤，例如：#異象 #先知性 #啟示"
+                               autocomplete="off">
+                        <div id="ds-hashtag-dropdown" class="ds-hashtag-dropdown" style="display: none;"></div>
+                        <small class="text-muted">使用 # 號開頭並以空格分隔標籤</small>
+                    </div>
+
+                    <div class="ds-form-group">
+                        <label class="ds-form-label">上傳圖片（選填，最多一張）</label>
+                        <div id="ds-dropzone" class="dropzone ds-dropzone">
+                            <div class="dz-message">
+                                <i class="ri-image-add-line"></i>
+                                <span>點擊或拖曳圖片至此處</span>
+                            </div>
+                        </div>
+                        <input type="hidden" id="ds-existing-image-id" value="">
+                        <input type="hidden" id="ds-remove-image-flag" value="">
+                    </div>
+
+                    <p id="ds-share-error" class="ds-form-error" hidden></p>
+
+                </div>
+                <div class="modal-footer ds-modal-footer">
+                    <button type="submit" class="ds-btn-submit" id="ds-share-submit">
+                        <span id="ds-share-btn-text">分享</span>
+                        <span id="ds-share-spinner"
+                              class="spinner-border spinner-border-sm d-none"
+                              role="status" aria-hidden="true"></span>
+                    </button>
+                    <button type="button" class="ds-btn-cancel" data-bs-dismiss="modal">取消</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{# ───────── 刪除確認 Modal ───────── #}
+<div class="modal fade" id="ds-delete-modal" tabindex="-1"
+     aria-labelledby="ds-delete-modal-label" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm ds-modal-dialog">
+        <div class="modal-content ds-modal-content">
+            <div class="modal-body ds-modal-body text-center py-4">
+                <i class="ri-delete-bin-2-line ds-delete-icon" aria-hidden="true"></i>
+                <p class="ds-delete-heading">確定要刪除這個夢境嗎？</p>
+                <p class="ds-delete-dream-title"></p>
+            </div>
+            <div class="modal-footer ds-modal-footer justify-content-center gap-3">
+                <button type="button" class="ds-btn-delete" id="ds-delete-confirm">刪除</button>
+                <button type="button" class="ds-btn-cancel" data-bs-dismiss="modal">取消</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# ───────── 查看夢境內容 Modal ───────── #}
+<div class="modal fade" id="ds-detail-modal" tabindex="-1"
+     aria-labelledby="ds-detail-modal-label" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content ds-modal-content">
+            <div class="modal-header ds-modal-header">
+                <h5 class="modal-title ds-modal-title" id="ds-detail-modal-label">
+                    <i class="ri-moon-line me-2" aria-hidden="true"></i>
+                    <span id="ds-detail-title"></span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
+            </div>
+            <div class="modal-body ds-modal-body">
+
+                <div class="ds-detail-meta">
+                    <span><i class="ri-calendar-line me-1"></i><span id="ds-detail-date"></span></span>
+                    <span><i class="ri-user-line me-1"></i><span id="ds-detail-author"></span></span>
+                    <span><i class="ri-folder-line me-1"></i><span id="ds-detail-type"></span></span>
+                </div>
+
+                <div id="ds-detail-image-wrap" class="mt-3 text-center">
+                    <img src="" alt="夢境圖片" class="img-fluid rounded" style="max-height: 320px;">
+                </div>
+
+                <div class="ds-content-section">
+                    <div class="ds-content-label"><i class="ri-book-open-line" aria-hidden="true"></i>內容</div>
+                    <p class="ds-content-text" id="ds-detail-content"></p>
+                </div>
+
+                <div id="ds-detail-interp-wrap">
+                    <div class="ds-content-section">
+                        <div class="ds-content-label"><i class="ri-translate-2" aria-hidden="true"></i>個人解讀／夢語言解釋</div>
+                        <p class="ds-content-text" id="ds-detail-interp"></p>
+                    </div>
+                </div>
+
+                <div id="ds-detail-revel-wrap">
+                    <div class="ds-content-section">
+                        <div class="ds-content-label"><i class="ri-lightbulb-flash-line" aria-hidden="true"></i>禱告方向</div>
+                        <p class="ds-content-text" id="ds-detail-revel"></p>
+                    </div>
+                </div>
+
+                <div id="ds-detail-tags-wrap" class="mt-3">
+                    <div id="ds-detail-tags" class="ds-hashtags"></div>
+                </div>
+
+            </div>
+            <div class="modal-footer ds-modal-footer">
+                <button type="button" class="ds-btn-cancel" data-bs-dismiss="modal">關閉</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# ───────── 主題篩選 Modal ───────── #}
+<div class="modal fade" id="FolderChooseModal" tabindex="-1"
+     aria-labelledby="folder-choose-modal-label" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered ds-modal-dialog">
+        <div class="modal-content ds-modal-content">
+            <div class="modal-header ds-modal-header">
+                <h5 class="modal-title" id="folder-choose-modal-label">
+                    <i class="ri-folder-line me-2" aria-hidden="true"></i>選擇主題
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
+            </div>
+            <div class="modal-body ds-modal-body">
+                <div class="form-group">
+                    <label for="ds-folder-select" class="form-label">請選擇要篩選的主題</label>
+                    <select id="ds-folder-select" class="form-control" style="width: 100%;">
+                        <option value="">（清除篩選）</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer ds-modal-footer">
+                <button type="button" class="ds-btn-submit" id="ds-folder-confirm">確定</button>
+                <button type="button" class="ds-btn-cancel" data-bs-dismiss="modal">取消</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block extra_js %}
+    <!-- jquery -->
+    <script src="{% static 'libs/jquery/jquery-3.6.0.min.js' %}"></script>
+    <!-- select2 -->
+    <script src="{% static 'libs/select2/dist/select2.min.js' %}"></script>
+    <!-- glightbox js -->
+    <script src="{% static 'libs/glightbox/dist/js/glightbox.min.js'%}"></script>
+    <!-- dropzone js -->
+    <script src="{% static 'libs/dropzone/dist/dropzone-min.js'%}"></script>
+
+    <script src="{% static 'js/inits/dreamlist_v2.init.js' %}?v=202506020003"></script>
+{% endblock extra_js %}

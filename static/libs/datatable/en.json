@@ -1,0 +1,188 @@
+{
+  "processing": "Processing...",
+  "loadingRecords": "Loading...",
+  "lengthMenu": "Show _MENU_ entries",
+  "info": "Showing _START_ to _END_ of _TOTAL_ entries",
+  "infoEmpty": "Showing 0 to 0 of 0 entries",
+  "infoFiltered": "(filtered from _MAX_ total entries)",
+  "search": "Search:",
+  "paginate": {
+    "first": "First",
+    "previous": "Previous",
+    "next": "Next",
+    "last": "Last"
+  },
+  "aria": {
+    "sortAscending": ": activate to sort column ascending",
+    "sortDescending": ": activate to sort column descending"
+  },
+  "emptyTable": "No data available in table",
+  "datetime": {
+    "previous": "Previous",
+    "next": "Next",
+    "hours": "hours",
+    "minutes": "minutes",
+    "seconds": "seconds",
+    "amPm": [
+      "AM",
+      "PM"
+    ],
+    "unknown": "-",
+    "weekdays": [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday"
+    ],
+    "months": [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December"
+    ]
+  },
+  "searchBuilder": {
+    "add": "Add Condition",
+    "condition": "Condition",
+    "deleteTitle": "Delete Filtering Rule",
+    "button": {
+      "_": "Complex query (%d)",
+      "0": "Complex query"
+    },
+    "clearAll": "Clear All",
+    "conditions": {
+      "array": {
+        "contains": "Contains",
+        "equals": "Equals",
+        "empty": "Empty",
+        "not": "Not",
+        "notEmpty": "Not Empty",
+        "without": "Without"
+      },
+      "date": {
+        "after": "After",
+        "before": "Before",
+        "between": "Between",
+        "empty": "Empty",
+        "equals": "Equals",
+        "not": "Not",
+        "notBetween": "Not Between",
+        "notEmpty": "Not Empty"
+      },
+      "number": {
+        "between": "Between",
+        "empty": "Empty",
+        "equals": "Equals",
+        "gt": "Greater Than",
+        "gte": "Greater Than or Equal To",
+        "lt": "Less Than",
+        "lte": "Less Than or Equal To",
+        "not": "Not",
+        "notBetween": "Not Between",
+        "notEmpty": "Not Empty"
+      },
+      "string": {
+        "contains": "Contains",
+        "empty": "Empty",
+        "endsWith": "Ends With",
+        "equals": "Equals",
+        "not": "Not",
+        "notEmpty": "Not Empty",
+        "startsWith": "Starts With",
+        "notContains": "Does Not Contain",
+        "notStarts": "Does Not Start With",
+        "notEnds": "Does Not End With"
+      }
+    },
+    "data": "Column",
+    "leftTitle": "Grouped Conditions",
+    "logicAnd": "And",
+    "logicOr": "Or",
+    "rightTitle": "Cancel Group",
+    "title": {
+      "_": "Complex query (%d)",
+      "0": "Complex query"
+    },
+    "value": "Value"
+  },
+  "editor": {
+    "close": "Close",
+    "create": {
+      "button": "Create",
+      "title": "Create new entry",
+      "submit": "Submit"
+    },
+    "remove": {
+      "button": "Remove",
+      "title": "Delete",
+      "submit": "Delete",
+      "confirm": {
+        "_": "Are you sure you wish to delete %d rows?",
+        "1": "Are you sure you wish to delete 1 row?"
+      }
+    },
+    "error": {
+      "system": "A system error has occurred (<a target=\"\\\" rel=\"\\\" href=\"\\\">More information</a>)."
+    },
+    "edit": {
+      "button": "Edit",
+      "title": "Edit entry",
+      "submit": "Update"
+    },
+    "multi": {
+      "title": "Multiple Values",
+      "info": "The values for this field are not consistent across all rows. Entering a new value here will set all rows to this new value.",
+      "restore": "Restore",
+      "noMulti": "This input can be edited individually, but not part of a group."
+    }
+  },
+  "autoFill": {
+    "cancel": "Cancel"
+  },
+  "buttons": {
+    "copySuccess": {
+      "_": "%d rows successfully copied",
+      "1": "1 row successfully copied"
+    },
+    "copyTitle": "Copy to clipboard",
+    "excel": "Excel",
+    "pdf": "PDF",
+    "print": "Print",
+    "copy": "Copy"
+  },
+  "searchPanes": {
+    "collapse": {
+      "_": "Search Panes (%d)",
+      "0": "Search Panes"
+    },
+    "emptyPanes": "No search panes",
+    "loadMessage": "Loading search panes...",
+    "clearMessage": "Clear"
+  },
+  "stateRestore": {
+    "emptyError": "No data available in table"
+  },
+  "select": {
+    "columns": {
+      "_": "%d columns selected",
+      "1": "1 column selected"
+    },
+    "rows": {
+      "_": "%d rows selected",
+      "0": "",
+      "1": "1 row selected"
+    }
+  },
+  "zeroRecords": "No matching records"
+}

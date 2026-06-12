@@ -1,0 +1,81 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}夢串流註冊{% endblock title %}
+
+{% block body_class %}ds-login-page{% endblock body_class %}
+
+{% block body_content %}
+<div class="ds-login-wrapper">
+    <div class="ds-login">
+        <div class="ds-login-left">
+            <div class="ds-login-inner">
+                <img class="ds-login-logo mb-2" src="{% static 'images/brands/breadoflife.png' %}" alt="Bread of Life">
+                <h1 class="ds-login-title">夢串流註冊</h1>
+                <form id="signup-form" class="ds-login-form" method="post" action="?token={{ token }}">
+                    {% csrf_token %}
+                    {% if form.errors %}
+                    <div class="ds-error">
+                        {{ form.non_field_errors }}
+                        {% for field in form %}
+                            {{ field.errors }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <div class="ds-field">
+                        <label for="id_first_name" class="ds-label">姓名</label>
+                        <div class="ds-input-wrap">
+                            <i class="ri-user-3-line ds-input-icon" aria-hidden="true"></i>
+                            <input type="text" id="id_first_name" name="first_name" class="ds-input"
+                                   placeholder="請輸入您的姓名" value="{{ form.first_name.value|default:'' }}" required>
+                        </div>
+                    </div>
+
+                    <div class="ds-field">
+                        <label for="id_email" class="ds-label">電子信箱</label>
+                        <div class="ds-input-wrap">
+                            <i class="ri-mail-line ds-input-icon" aria-hidden="true"></i>
+                            <input type="email" id="id_email" name="email" class="ds-input"
+                                   placeholder="請輸入您的Email" value="{{ form.email.value|default:'' }}" required>
+                        </div>
+                    </div>
+
+                    <div class="ds-field">
+                        <label for="id_org" class="ds-label">所屬教會</label>
+                        <div class="ds-input-wrap">
+                            <i class="ri-building-line ds-input-icon" aria-hidden="true"></i>
+                            <input type="text" id="id_org" name="org" class="ds-input"
+                                   placeholder="請輸入所屬教會" value="{{ form.org.value|default:'' }}" required>
+                        </div>
+                    </div>
+
+                    <div class="ds-field">
+                        <label for="id_role_id" class="ds-label">身分別</label>
+                        <div class="ds-input-wrap">
+                            <i class="ri-user-settings-line ds-input-icon" aria-hidden="true"></i>
+                            <select id="id_role_id" name="role_id" class="ds-input" required>
+                                <option value="">請選擇身分別</option>
+                                <option value="2" {% if form.role_id.value == "2" %}selected{% endif %}>牧長</option>
+                                <option value="3" {% if form.role_id.value == "3" %}selected{% endif %}>組長</option>
+                                <option value="4" {% if form.role_id.value == "4" %}selected{% endif %}>一般弟兄姊妹</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button class="ds-submit" type="submit">
+                        <span>註冊</span>
+                    </button>
+                </form>
+            </div>
+            <div class="ds-login-meta">
+                <div class="ds-login-footer">© 2026 台北靈糧堂</div>
+            </div>
+        </div>
+        <div class="ds-login-right">
+            <img class="ds-login-image" src="{% static 'images/brands/dreamstream.png' %}" alt="Dreamstream">
+        </div>
+    </div>
+</div>
+{% endblock body_content %}

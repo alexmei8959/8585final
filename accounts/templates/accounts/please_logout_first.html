@@ -1,0 +1,21 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+{% block title %}您有已登入的帳號{% endblock title %}
+
+{% block content %}
+    <main class="main-content">
+        <div class="text-center p-5 rounded-3 shadow-sm bg-white">
+            <img src="{% static 'images/logout.png' %}"
+                 alt="請先登出"
+                 class="img-fluid mb-4"
+                 style="max-width: 80%;">
+            <h2 class="mb-3">您目前已登入系統</h2>
+            <p class="text-muted mb-4">
+                請先登出目前帳號或使用其他瀏覽器或裝置，再重新開啟此連結以設定密碼。
+            </p>
+        </div>
+    </main>
+{% endblock content %}
+
+{% block extra_js %}
+{% endblock extra_js %}

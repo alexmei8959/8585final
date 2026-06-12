@@ -1,0 +1,49 @@
+{% extends "partials/base.html" %}
+{% load static %}
+
+{% block title %}夢境回應{% endblock title %}
+
+{% block content %}
+<div class="main-content ds-reply">
+    <div class="page-content">
+        <div class="container-fluid">
+
+            {# 設定資料供 JS 讀取（符合 CSP） #}
+            <div id="ds-reply-config"
+                 data-dream-id="{{ dream_id }}"
+                 data-dream-api="/dreams/dream/"
+                 data-reply-api="/dreams/dream-reply/"
+                 data-list-url="{% url 'dreams:dream-list' %}"
+                 data-csrf="{{ csrf_token }}"
+                 data-user-id="{{ request.user.id }}"
+                 data-username="{{ request.user.first_name }}"
+                 data-user-role="{{ request.user.userprofile.role_id|default:'3' }}"
+                 hidden></div>
+
+            {# 頁面頭 #}
+            <div class="ds-reply-header" id="ds-reply-header">
+                <a class="ds-reply-back" href="{% url 'dreams:dream-list' %}">
+                    <i class="ri-arrow-left-line" aria-hidden="true"></i>
+                    返回夢境列表
+                </a>
+                <h1 class="ds-reply-title">夢境回應</h1>
+                <p class="ds-reply-subtitle" id="ds-reply-subtitle">載入中...</p>
+            </div>
+
+            {# 時間軸容器 #}
+            <div class="ds-timeline" id="ds-timeline">
+                <div class="ds-reply-loading">
+                    <div class="spinner-border ds-spinner" role="status">
+                        <span class="visually-hidden">載入中...</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block extra_js %}
+    <script src="{% static 'js/inits/dream_reply.init.js' %}"></script>
+{% endblock extra_js %}

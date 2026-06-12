@@ -1,0 +1,125 @@
+{% load static %}
+{% block sidebar %}
+    <!-- ========== App Menu ========== -->
+    <div class="app-menu navbar-menu bg-warning-subtle border-end border-warning-subtle">
+        <!-- LOGO -->
+        <div class="navbar-brand-box bg-transparent border-bottom border-warning-subtle">
+            <!-- Dark Logo-->
+            <a href="{% url 'dreams:dream-list' %}" class="logo logo-dark">
+                    <span class="logo-sm">
+                        <img src="{% static 'images/brands/Group.png' %}" alt="" height="22">
+                    </span>
+                <span class="logo-lg">
+                        <img src="{% static 'images/brands/breadoflife.png' %}" alt="" height="25">
+                    </span>
+            </a>
+            <!-- Light Logo-->
+            <a href="{% url 'dreams:dream-list' %}" class="logo logo-light">
+                    <span class="logo-sm">
+                        <img src="{% static 'images/brands/Group.png' %}" alt="" height="22">
+                    </span>
+                <span class="logo-lg">
+                        <img src="{% static 'images/brands/breadoflife.png' %}" alt="" height="25">
+                    </span>
+            </a>
+            <button type="button" class="btn btn-sm p-0 fs-20 header-item float-end btn-vertical-sm-hover" id="vertical-hover">
+                <i class="ri-record-circle-line"></i>
+            </button>
+        </div>
+
+        <div id="scrollbar">
+            <div class="container-fluid">
+
+                <div id="two-column-menu">
+                </div>
+                <ul class="navbar-nav" id="navbar-nav">
+                    <li class="menu-title"><span>Menu</span></li>
+
+                    {% if menus %}
+                        {% regroup menus by menu_1st as menu_groups %}
+                        {% for group in menu_groups %}
+                            <li class="nav-item">
+                                <a class="nav-link menu-link" href="#sidebar{{ group.grouper }}"
+                                   data-bs-toggle="collapse"
+                                   role="button" aria-expanded="true" aria-controls="#sidebar{{ group.grouper }}">
+                                    <i class="{{ group.list.0.menu_1st_icon }}"></i> <span>{{ group.grouper }}</span>
+                                </a>
+                                <div class="collapse menu-dropdown" id="sidebar{{ group.grouper }}">
+                                    <ul class="nav nav-sm flex-column">
+                                        {% for item in group.list %}
+                                            <li class="nav-item">
+                                                {% if item.menu_2st == "8585報修系統" %}
+                                                    <a href="#subDreamstream"
+                                                       class="nav-link"
+                                                       data-bs-toggle="collapse"
+                                                       role="button"
+                                                       aria-expanded="true"
+                                                       aria-controls="subDreamstream">
+                                                        {{ item.menu_2st }} <span class="menu-arrow"></span>
+                                                    </a>
+                                                    <div class="collapse menu-dropdown show" id="subDreamstream">
+                                                        <ul class="nav nav-sm flex-column" id="sidebarFolderList">
+                                                            <li class="nav-item text-muted ps-4 small" id="sidebarFolderLoading">載入中...</li>
+                                                        </ul>
+                                                    </div>
+                                                {% else %}
+                                                    <a href="{{ item.menu_2st_url }}"
+                                                       class="nav-link">{{ item.menu_2st }}</a>
+                                                {% endif %}
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    {% endif %}
+
+                </ul>
+            </div>
+            <!-- Sidebar -->
+        </div>
+        <div class="sidebar-background"></div>
+    </div>
+    <!-- Left Sidebar End -->
+    <!-- Vertical Overlay-->
+    <div class="vertical-overlay"></div>
+{% endblock sidebar %}
+
+<script>
+window.addEventListener("load", function () {
+    const dreamListBase = "{% url 'dreams:dream-list_v2' %}";
+    const apiUrl = "/dreams/dream-folder/allowed/";
+
+    fetch(apiUrl, { credentials: "same-origin" })
+        .then(r => r.ok ? r.json() : Promise.reject("HTTP " + r.status))
+        .then(data => {
+            // SimpleBar 初始化後重新查詢，確保拿到 live DOM 元素
+            const list = document.getElementById("sidebarFolderList");
+            if (!list) return;
+
+            const folders = Array.isArray(data) ? data : (data.results || []);
+            list.innerHTML = "";
+            if (!folders.length) {
+                list.innerHTML = '<li class="nav-item text-muted ps-4 small">（無可用主題）</li>';
+                return;
+            }
+            const activeFolder = new URLSearchParams(location.search).get("folder") || "";
+            folders.forEach(f => {
+                const li = document.createElement("li");
+                li.className = "nav-item";
+                const a = document.createElement("a");
+                a.className = "nav-link ps-4" + (f.id === activeFolder ? " active" : "");
+                a.href = dreamListBase + "?folder=" + f.id;
+                a.textContent = f.title;
+                li.appendChild(a);
+                list.appendChild(li);
+            });
+        })
+        .catch(err => {
+            const list = document.getElementById("sidebarFolderList");
+            if (list) list.innerHTML = '<li class="nav-item text-muted ps-4 small">載入失敗</li>';
+            console.error("[sidebar] 載入主題失敗:", err);
+        });
+});
+</script>
+

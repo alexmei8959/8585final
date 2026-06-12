@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8">
+    <title>報修詳情 - {{ repair.id }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+
+<body class="bg-light">
+    <div class="container mt-5">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'ithelps:repair_list' %}">回列表</a></li>
+                <li class="breadcrumb-item active">報修詳情 #{{ repair.id }}</li>
+            </ol>
+        </nav>
+
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">報修單資訊</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>報修人：</strong> {{ repair.username }}</p>
+                        <p><strong>地點：</strong> {{ repair.location }}</p>
+                        <p><strong>狀態：</strong>
+                            <span
+                                class="badge {% if repair.status == '已完成' %}bg-success{% else %}bg-warning text-dark{% endif %}">
+                                {{ repair.status }}
+                            </span>
+                        </p>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <p class="text-muted">時間：{{ repair.created_at|date:"Y-m-d H:i" }}</p>
+                    </div>
+                </div>
+                <hr>
+                <h5>故障描述：</h5>
+                <p class="p-3 bg-light border rounded">{{ repair.description }}</p>
+
+                <hr>
+                <h5>附件圖片/影片：</h5>
+                <div class="row">
+                    {% for file in repair.files.all %}
+                    <div class="col-md-4 mb-3">
+                        {% if ".mp4" in file.file_path.name|lower or ".mov" in file.file_path.name|lower or ".avi" in file.file_path.name|lower %}
+                        <div class="bg-dark rounded d-flex align-items-center justify-content-center"
+                             style="height: 200px; cursor: pointer"
+                             data-bs-toggle="modal"
+                             data-bs-target="#imageModal"
+                             data-type="video"
+                             data-src="{{ file.file_path.url }}">
+                            <span class="text-white" style="font-size: 50px;">📹</span>
+                        </div>
+                        {% else %}
+                        <img src="{{ file.file_path.url }}"
+                             class="img-fluid rounded shadow-sm"
+                             style="cursor: pointer; object-fit: cover; height: 200px; width: 100%;"
+                             data-bs-toggle="modal"
+                             data-bs-target="#imageModal"
+                             data-type="image"
+                             data-src="{{ file.file_path.url }}">
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content bg-dark border-0">
+                <div class="modal-header border-0 pb-0">
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-3 text-center">
+                    <img src="" id="modalImage" class="img-fluid rounded d-none" style="max-height: 80vh">
+                    <video id="modalVideo" controls class="img-fluid rounded d-none" style="max-height: 80vh">
+                        <source src="" type="video/mp4">
+                    </video>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    document.getElementById('imageModal').addEventListener('show.bs.modal', function(event) {
+        var trigger = event.relatedTarget;
+        var type = trigger.getAttribute('data-type');
+        var src = trigger.getAttribute('data-src');
+        var modalImage = document.getElementById('modalImage');
+        var modalVideo = document.getElementById('modalVideo');
+
+        if (type === 'image') {
+            modalImage.src = src;
+            modalImage.classList.remove('d-none');
+            modalVideo.classList.add('d-none');
+        } else if (type === 'video') {
+            modalVideo.src = src;
+            modalVideo.classList.remove('d-none');
+            modalImage.classList.add('d-none');
+        }
+    });
+
+    document.getElementById('imageModal').addEventListener('hidden.bs.modal', function() {
+        document.getElementById('modalImage').src = '';
+        document.getElementById('modalVideo').src = '';
+    });
+    </script>
+</body>
+
+</html>

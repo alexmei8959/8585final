@@ -1,0 +1,258 @@
+{% extends 'partials/base_lineliff.html' %}
+{% load static %}
+{% block title %}夢串流上傳表單{% endblock title %}
+
+{% block extra_css %}
+<style>
+    .liff-form-wrap {
+        max-width: 640px;
+        margin: 0 auto;
+        padding: 1rem;
+    }
+    question-widget { display: block; }
+    question-widget .question-item { cursor: default !important; }
+    #liff-loading { text-align: center; padding: 3rem 0; }
+    #liff-success { text-align: center; padding: 3rem 0; display: none; }
+</style>
+{% endblock extra_css %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+            <div class="liff-form-wrap">
+
+                <div id="liff-loading">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="mt-2 text-muted">初始化中...</p>
+                </div>
+
+                <div id="liff-success">
+                    <i class="ri-checkbox-circle-fill text-success" style="font-size:3rem;"></i>
+                    <h4 class="mt-3">送出成功！</h4>
+                    <p class="text-muted">感謝您的填寫，資料已儲存。</p>
+                </div>
+
+                <!-- 未綁定拒絕區塊 -->
+                <div id="liff-unbound" style="display:none;" class="text-center py-5">
+                    <i class="ri-forbid-line text-danger" style="font-size:3rem;"></i>
+                    <h5 class="mt-3 fw-bold">無法使用此功能</h5>
+                    <p class="text-muted">請向管理者申請帳號並進行綁定</p>
+                </div>
+
+                <form id="liff-form" style="display:none;" novalidate>
+                    <!-- 標題 -->
+                    <div class="text-center mb-4" id="form-title-section"></div>
+
+                    <!-- Header 個人資料欄位 -->
+                    <div id="form-header-fields" class="card mb-3" style="display:none;">
+                        <div class="card-body" id="form-header-fields-body"></div>
+                    </div>
+
+                    <!-- 題目（由 question-widget 渲染） -->
+                    <div id="form-questions-section" class="d-flex flex-column gap-3"></div>
+
+                    <div class="d-grid mt-4 mb-5">
+                        <button type="submit" class="ds-submit" id="btn-submit">
+                            <span id="btn-submit-text">送出</span>
+                            <span id="btn-submit-spinner" class="spinner-border spinner-border-sm ms-2" style="display:none;"></span>
+                        </button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block extra_js %}
+<link href="{% static 'libs/sweetalert2/dist/sweetalert2.min.css' %}" rel="stylesheet" type="text/css" />
+<script src="{% static 'libs/sweetalert2/dist/sweetalert2.min.js' %}"></script>
+<script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script type="module">
+import { store } from "{% static 'js/form_manager/core/Store.js' %}";
+import { actions } from "{% static 'js/form_manager/core/actions.js' %}";
+import { QuestionWidget } from "{% static 'js/form_manager/previewer/QuestionWidget.js' %}";
+
+customElements.define('question-widget', QuestionWidget);
+store.registerActions(actions);
+
+const FORM_JSON = {{ form_json|safe }};
+const SUBMIT_URL  = "{% url 'dreams:_dream-liff-submit' %}";
+const CHECK_URL   = "{% url 'accounts:user-line-check' %}";
+let lineUserId = 'LINE';
+
+// ── LIFF init ──────────────────────────────────────────────
+liff.init({ liffId: '2009451335-bDW06DlM' })
+    .then(() => {
+        if (liff.isLoggedIn()) {
+            liff.getProfile()
+                .then(p => { lineUserId = p.userId; checkBinding(); })
+                .catch(() => initForm());
+        } else {
+            liff.login();
+        }
+    })
+    .catch(err => {
+        console.warn('LIFF init failed, proceeding without profile:', err);
+        initForm();
+    });
+
+// ── 綁定檢查 ───────────────────────────────────────────────
+function checkBinding() {
+    fetch(`${CHECK_URL}?line_user_id=${encodeURIComponent(lineUserId)}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.bound) {
+                initForm();
+            } else {
+                document.getElementById('liff-loading').style.display = 'none';
+                document.getElementById('liff-unbound').style.display = '';
+            }
+        })
+        .catch(() => initForm()); // 無法檢查時直接進表單
+}
+
+// ── Form init ──────────────────────────────────────────────
+async function initForm() {
+    document.getElementById('liff-loading').style.display = 'none';
+
+    if (!FORM_JSON || !FORM_JSON.order) {
+        document.getElementById('liff-form').innerHTML = '<p class="text-danger">表單載入失敗，請稍後再試。</p>';
+        document.getElementById('liff-form').style.display = '';
+        return;
+    }
+
+    // 載入資料到 store（共用 actions 的 LOAD_DATA）
+    await store.dispatch('LOAD_DATA', FORM_JSON);
+
+    renderTitle();
+    renderHeaderFields();
+    renderQuestions();
+
+    document.getElementById('liff-form').style.display = '';
+    document.getElementById('liff-form').addEventListener('submit', handleSubmit);
+}
+
+// ── 標題 ───────────────────────────────────────────────────
+function renderTitle() {
+    const { meta, header } = store.state;
+    const section = document.getElementById('form-title-section');
+    if (header.title_name) {
+        section.insertAdjacentHTML('beforeend', `<h4 class="fw-bold mb-1">${escHtml(header.title_name)}</h4>`);
+    }
+    {#if (header.title_en_name) {#}
+    {#    section.insertAdjacentHTML('beforeend', `<div class="text-muted small">${escHtml(header.title_en_name)}</div>`);#}
+    {#}#}
+    {#if (meta.name) {#}
+    {#    section.insertAdjacentHTML('beforeend', `<h2 class="fw-bold mt-3 text-dark">${escHtml(meta.name)}</h2>`);#}
+    {#}#}
+}
+
+// ── Header 個人資料欄位 ────────────────────────────────────
+function renderHeaderFields() {
+    const fields = ((store.state.header || {}).fields || []).filter(f => f.enabled !== false);
+    if (!fields.length) return;
+
+    const body = document.getElementById('form-header-fields-body');
+    fields.forEach(field => {
+        const key = field.key || field.label;
+        const div = document.createElement('div');
+        div.className = 'mb-2';
+        div.innerHTML = `
+            <label class="form-label mb-1">${escHtml(field.label)}${field.required ? ' <span class="text-danger">*</span>' : ''}</label>
+            <input type="text" class="form-control" name="hdr_${escHtml(key)}" ${field.required ? 'required' : ''}>`;
+        body.appendChild(div);
+    });
+    document.getElementById('form-header-fields').style.display = '';
+}
+
+// ── 題目（直接使用 QuestionWidget） ───────────────────────
+function renderQuestions() {
+    const { questions, order } = store.state;
+    const container = document.getElementById('form-questions-section');
+
+    order.forEach(qid => {
+        if (!questions[qid]) return;
+        const widget = document.createElement('question-widget');
+        widget.dataset.id = qid;
+        widget.data = questions[qid];
+        container.appendChild(widget);
+    });
+}
+
+// ── Submit ─────────────────────────────────────────────────
+function handleSubmit(e) {
+    e.preventDefault();
+    const form = document.getElementById('liff-form');
+
+    // 驗證 required 題目（store 中 value 為空視為未填）
+    const { questions, order } = store.state;
+    for (const qid of order) {
+        const q = questions[qid];
+        if (!q || !q.required || q.ui_type === 'section_header') continue;
+        const val = q.value;
+        const isEmpty = val === null || val === undefined || val === '' || (Array.isArray(val) && !val.length);
+        if (isEmpty) {
+            alert(`「${q.question}」為必填，請確認。`);
+            return;
+        }
+    }
+
+    // 收集 header 個人資料
+    const headerData = {};
+    form.querySelectorAll('[name^="hdr_"]').forEach(el => {
+        headerData[el.name.replace('hdr_', '')] = el.value;
+    });
+
+    const today = new Date().toISOString().slice(0, 10);
+    const payload = {
+        line_user_id: lineUserId,
+        title: `${(store.state.meta || {}).name || '夢境上傳'} ${today}`,
+        dream_date: today,
+        form_data: {
+            meta: store.state.meta,
+            header: { ...store.state.header, filled: headerData },
+            questions: store.state.questions,
+            footer: store.state.footer,
+        },
+    };
+
+    const btn = document.getElementById('btn-submit');
+    btn.disabled = true;
+    document.getElementById('btn-submit-spinner').style.display = '';
+
+    fetch(SUBMIT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === 'ok') {
+            document.getElementById('liff-form').style.display = 'none';
+            Swal.fire({
+                icon: 'success',
+                title: '上傳成功待審核',
+                confirmButtonText: '確定',
+            }).then(() => liff.closeWindow());
+        } else {
+            alert('送出失敗：' + (data.error || '未知錯誤'));
+            btn.disabled = false;
+            document.getElementById('btn-submit-spinner').style.display = 'none';
+        }
+    })
+    .catch(err => {
+        alert('網路錯誤，請重試。');
+        console.error(err);
+        btn.disabled = false;
+        document.getElementById('btn-submit-spinner').style.display = 'none';
+    });
+}
+
+function escHtml(str) {
+    return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
+{% endblock extra_js %}

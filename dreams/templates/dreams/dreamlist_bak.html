@@ -1,0 +1,205 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+{% block title %}夢串流主頁面{% endblock title %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+            <div class="chat-wrapper d-lg-flex gap-1 mx-n4 mt-n4 p-1">
+                <div class="ds-manager-content w-100 p-3 py-0">
+                    <div class="mx-n3 pt-4 px-4 file-manager-content-scroll" data-simplebar>
+                        <div class="d-flex align-items-center mb-3 justify-content-between flex-wrap gap-2">
+                            <div>
+                                <h4 class="mb-1">夢境</h4>
+                                <p class="text-muted mb-0">整理夢境，連結回應與故事。</p>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="search-box">
+                                    <input type="text" class="form-control" id="dream-search-input" placeholder="搜尋夢境或資料夾" autocomplete="off">
+                                    <i class="ri-search-line search-icon"></i>
+                                </div>
+                                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#dreamFolderModal">
+                                    <i class="ri-folder-add-line me-1"></i> 新增資料夾
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <div class="d-flex align-items-center mb-2">
+                                <h5 class="flex-grow-1 mb-0">資料夾</h5>
+                                <span class="text-muted fs-12">以主題或年份整理</span>
+                            </div>
+                            <div class="row g-3" id="dream-folder-list"></div>
+                        </div>
+
+                        <div>
+                            <div class="d-flex align-items-center mb-2">
+                                <h5 class="flex-grow-1 mb-0">夢境標題</h5>
+                                <span class="text-muted fs-12">最新夢境列表</span>
+                            </div>
+                            <div class="row g-3" id="dream-card-list"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+<div class="modal fade" id="dreamFolderModal" tabindex="-1" aria-labelledby="dreamFolderModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <form class="modal-content" id="dream-folder-form">
+            <div class="modal-header">
+                <h5 class="modal-title" id="dreamFolderModalLabel">新增資料夾</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <label for="dream-folder-name" class="form-label">資料夾名稱</label>
+                <input type="text" class="form-control" id="dream-folder-name" placeholder="輸入資料夾名稱" required>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">取消</button>
+                <button type="submit" class="btn btn-primary">建立</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% block extra_js %}
+    <!-- jquery -->
+    <script src="{% static 'libs/jquery/jquery-3.6.0.min.js' %}"></script>
+    <script>
+        const baseUrl = '/dreams/dream/';
+        const uiUrl = `${baseUrl}ui/`;
+        const replyUrl = "{% url 'dreams:dream-reply' %}";
+        const csrfToken = '{{ csrf_token }}';
+        const currentUserId = '{{ user.id }}';
+        let searchTimer = null;
+
+        function escapeHtml(text) {
+            return $('<div>').text(text || '').html();
+        }
+
+        function renderFolders(folders) {
+            const container = $('#dream-folder-list');
+            container.empty();
+            if (!folders || folders.length === 0) {
+                container.append('<div class="col-12 text-muted">目前沒有資料夾</div>');
+                return;
+            }
+            folders.forEach((folder) => {
+                container.append(
+                    `<div class="col-md-4">
+                        <div class="card shadow-none border">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="avatar-sm">
+                                        <div class="avatar-title bg-warning-subtle text-warning rounded">
+                                            <i class="ri-folder-3-line"></i>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-1">${escapeHtml(folder.title)}</h6>
+                                        <p class="text-muted mb-0 fs-12">資料夾</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`
+                );
+            });
+        }
+
+        function renderDreams(dreams) {
+            const container = $('#dream-card-list');
+            container.empty();
+            if (!dreams || dreams.length === 0) {
+                container.append('<div class="col-12 text-muted">目前沒有夢境</div>');
+                return;
+            }
+            dreams.forEach((dream) => {
+                const dateText = dream.dream_date ? dream.dream_date : '';
+                const typeText = dream.dream_type ? ` · 類別：${escapeHtml(dream.dream_type)}` : '';
+                container.append(
+                    `<div class="col-xl-4 col-md-6">
+                        <div class="card shadow-none border h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="mb-1">${escapeHtml(dream.title)}</h6>
+                                        <p class="text-muted mb-2 fs-12">${escapeHtml(dateText)}${typeText}</p>
+                                    </div>
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-icon btn-ghost-secondary" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="ri-more-2-fill"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end">
+                                            <li><a class="dropdown-item" href="${replyUrl}?dream=${dream.id}">回應</a></li>
+                                            <li><button class="dropdown-item text-danger js-dream-delete" type="button" data-id="${dream.id}">刪除</button></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <p class="text-muted mb-0 fs-13">點擊查看夢境詳情與回應。</p>
+                            </div>
+                        </div>
+                    </div>`
+                );
+            });
+        }
+
+        function loadDreams() {
+            $.ajax({
+                url: uiUrl,
+                type: 'GET',
+                data: {
+                    search: $('#dream-search-input').val() || ''
+                },
+                success: function (resp) {
+                    renderFolders(resp.folders || []);
+                    renderDreams(resp.dreams || []);
+                },
+                error: function () {
+                    $('#dream-folder-list').html('<div class="col-12 text-danger">載入資料夾失敗</div>');
+                    $('#dream-card-list').html('<div class="col-12 text-danger">載入夢境失敗</div>');
+                }
+            });
+        }
+
+        $('#dream-search-input').on('input', function () {
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(loadDreams, 300);
+        });
+
+        $('#dream-folder-form').on('submit', function (e) {
+            e.preventDefault();
+            const folderName = $('#dream-folder-name').val().trim();
+            if (!folderName) {
+                return;
+            }
+            $.ajax({
+                headers: {"X-CSRFToken": csrfToken},
+                url: baseUrl,
+                method: 'POST',
+                data: {
+                    title: folderName,
+                    is_folder: true,
+                    user: currentUserId
+                },
+                success: function () {
+                    $('#dream-folder-name').val('');
+                    $('#dreamFolderModal').modal('hide');
+                    loadDreams();
+                },
+                error: function () {
+                    alert('新增資料夾失敗');
+                }
+            });
+        });
+
+        $(document).ready(function () {
+            loadDreams();
+        });
+    </script>
+{% endblock extra_js %}

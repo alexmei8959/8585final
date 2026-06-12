@@ -1,0 +1,36 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+
+{% block title %}註冊成功{% endblock title %}
+
+{% block body_class %}ds-login-page{% endblock body_class %}
+
+{% block body_content %}
+<div class="ds-login-wrapper">
+    <div class="ds-login">
+        <div class="ds-login-left">
+            <div class="ds-login-inner">
+                <img class="ds-login-logo mb-2" src="{% static 'images/brands/breadoflife.png' %}" alt="Bread of Life">
+                <h1 class="ds-login-title">夢串流-註冊成功</h1>
+                <div class="ds-success-message">
+                    <div class="mb-4 text-center">
+                        <i class="ri-checkbox-circle-line" style="font-size: 72px; color: #28a745;"></i>
+                    </div>
+                    <p class="text-center">您的帳號已成功註冊！</p>
+                    <p class="text-center">我們已寄送一封密碼設定信件到您的信箱，請點選信件中的連結來設定您的密碼。</p>
+                    <p class="text-center text-muted">設定密碼後即可登入使用系統。</p>
+                </div>
+                <div class="mt-4 text-center">
+                    <a href="{% url 'accounts:login' %}" class="ds-submit">返回登入頁面</a>
+                </div>
+            </div>
+            <div class="ds-login-meta">
+                <div class="ds-login-footer">© 2026 台北靈糧堂</div>
+            </div>
+        </div>
+        <div class="ds-login-right">
+            <img class="ds-login-image" src="{% static 'images/brands/dreamstream.png' %}" alt="Dreamstream">
+        </div>
+    </div>
+</div>
+{% endblock body_content %}

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>雙因素驗證碼 - 夢串流</title>
+
+    <style>
+        @media screen and (max-width: 600px) {
+            .container {
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+            .header-cell, .content-main-cell, .footer-info-cell {
+                padding-left: 15px !important;
+                padding-right: 15px !important;
+            }
+            .content-main, .footer-info {
+                padding: 20px !important;
+            }
+            .header-title {
+                font-size: 22px !important;
+                line-height: 32px !important;
+            }
+            .logo {
+                height: 35px !important;
+            }
+        }
+    </style>
+</head>
+
+<body style="margin:0; padding:0; background-color:#f7f1e5; font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;">
+<table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color:#f7f1e5;">
+<tr>
+<td align="center" style="padding:20px 0;">
+<table class="container" width="600" border="0" cellspacing="0" cellpadding="0" style="max-width:600px;margin:0 auto;">
+
+    <!-- Header -->
+    <tr>
+        <td class="header-cell" style="padding:30px 30px 20px 30px;">
+            <table width="100%" cellspacing="0" cellpadding="0">
+                <tr>
+                    <td width="95" valign="middle" style="line-height:0;">
+                        <img class="logo"
+                             src="https://dreamstream.bolcc.taipei/static/images/brands/breadoflife.png"
+                             height="40"
+                             style="display:block;">
+                    </td>
+                    <td valign="middle">
+                        <h1 class="header-title" style="
+                            font-family: Georgia, 'Times New Roman', serif;
+                            font-size:28px;
+                            line-height:40px;
+                            letter-spacing:4px;
+                            color:#8f6123;
+                            margin:0;
+                            padding-left:15px;
+                        ">
+                            夢串流
+                        </h1>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+
+    <!-- Main Content -->
+    <tr>
+        <td class="content-main-cell">
+            <table class="content-main" width="100%" cellspacing="0" cellpadding="0" style="
+                background-color:#ffffff;
+                padding:30px;
+                border-radius:12px;
+                box-shadow:0 12px 24px rgba(143,97,35,0.12);
+            ">
+
+                <tr>
+                    <td style="padding-bottom:15px;">
+                        <h2 style="
+                            font-size:18px;
+                            color:#5b4a2e;
+                            margin:0 0 10px 0;
+                            font-weight:600;
+                            letter-spacing:1px;
+                        ">
+                            主旨：【雙因素驗證碼】請完成登入驗證
+                        </h2>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td style="color:#5b4a2e; font-size:16px; line-height:1.7;">
+
+                        <p style="margin:0 0 15px 0;">
+                            親愛的 <strong>{{ user }}</strong>，您好：
+                        </p>
+
+                        <p style="margin:0 0 20px 0;">
+                            您正在登入 <strong>夢串流</strong> 系統。
+                        </p>
+
+                        <p style="margin:0 0 25px 0;">
+                            請使用以下 <strong>6 位數驗證碼</strong> 完成雙因素認證：
+                        </p>
+
+                        <!-- OTP Box -->
+                        <table width="100%" cellspacing="0" cellpadding="0" style="margin-bottom:25px;">
+                            <tr>
+                                <td align="center">
+                                    <div style="
+                                        display:inline-block;
+                                        padding:15px 30px;
+                                        background-color:#f3e8d3;
+                                        border:2px dashed #8f6123;
+                                        border-radius:12px;
+                                        font-size:28px;
+                                        font-weight:bold;
+                                        letter-spacing:8px;
+                                        color:#8f6123;
+                                    ">
+                                        {{ otp_code }}
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <p style="margin:0 0 20px 0;">
+                            此驗證碼將於 <strong>{{ expire_minutes }} 分鐘</strong> 後失效。
+                        </p>
+
+                        <p style="margin:0 0 20px 0; color:#b00020; font-weight:bold;">
+                            ⚠ 請勿將此驗證碼提供給任何人，以確保帳號安全。
+                        </p>
+
+                        <p style="margin:0;">
+                            若您並未嘗試登入本系統，請忽略此信件。
+                        </p>
+
+                    </td>
+                </tr>
+
+            </table>
+        </td>
+    </tr>
+
+    <!-- Footer -->
+    <tr>
+        <td class="footer-info-cell">
+            <table class="footer-info" width="100%" cellspacing="0" cellpadding="0" style="
+                background-color:#efe2c7;
+                padding:20px 30px;
+                font-size:12px;
+                color:#9c8a6a;
+                text-align:center;
+            ">
+                <tr>
+                    <td>
+                        此信件為系統自動發送，請勿直接回覆。<br>
+                        © 2026 台北靈糧堂
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+
+</table>
+</td>
+</tr>
+</table>
+</body>
+</html>

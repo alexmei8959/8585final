@@ -1,0 +1,198 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+{% block title %}主題管理{% endblock title %}
+
+{% block extra_css %}
+    <!--datatable css-->
+    <link href="{% static 'libs/datatable/css/dataTables.bootstrap5.min.css' %}" rel="stylesheet"/>
+    <link href="{% static 'libs/datatable/css/dataTables.dataTables.css' %}" rel="stylesheet"/>
+
+    <!--datatable button css-->
+    <link href="{% static 'libs/datatable/css/buttons.dataTables.min.css' %}" rel="stylesheet"/>
+
+    <!--datatable responsive css-->
+    <link href="{% static 'libs/datatable/css/responsive.bootstrap.min.css' %}" rel="stylesheet"/>
+
+    <!-- SweetAlert2 css-->
+    <link href="{% static 'libs/sweetalert2/dist/sweetalert2.min.css' %}" rel="stylesheet">
+
+    <!-- icon css -->
+    <link href="{% static 'iconfonts/fontawesome/fontawesome-all.min.css' %}" rel="stylesheet" type="text/css"/>
+
+    <style>
+        /* 手機端卡片樣式 */
+        @media screen and (max-width: 767px) {
+            .card-row {
+                display: block;
+                margin-bottom: 1rem;
+                padding: 1rem;
+                border: 1px solid #dee2e6;
+                border-radius: 0.5rem;
+                background: #fff;
+            }
+            .card-row .card-field {
+                display: flex;
+                justify-content: space-between;
+                padding: 0.5rem 0;
+                border-bottom: 1px solid #f0f0f0;
+            }
+            .card-row .card-field:last-child {
+                border-bottom: none;
+            }
+            .card-row .card-label {
+                font-weight: bold;
+                color: #666;
+                min-width: 80px;
+            }
+            .card-row .card-value {
+                flex: 1;
+                text-align: right;
+                color: #333;
+            }
+            .card-row .card-actions {
+                margin-top: 0.5rem;
+                padding-top: 0.5rem;
+                border-top: 2px solid #f0f0f0;
+                text-align: center;
+            }
+        }
+    </style>
+{% endblock extra_css %}
+
+{% block content %}
+    <div class="main-content">
+        <div class="page-content">
+            <div class="container-fluid">
+                {% block pagetitle %}
+                    {% include "partials/page-title.html" with pagetitle="夢境管理" title="主題管理" %}
+                {% endblock pagetitle %}
+                <!-- Row -->
+                <div class="row row-sm">
+                    <div class="col-lg-12">
+                        <div class="card custom-card">
+                            <div class="card-body">
+                                <div>
+                                    <button type="button" class="btn btn-primary" id="new" data-bs-toggle="modal"
+                                            data-bs-target="#NewAndEditModal" title="新增"><i class="ri-add-line"></i>
+                                        新增主題
+                                    </button>
+                                    &nbsp
+                                    <p></p>
+                                </div>
+                                <div class="table-responsive">
+                                    <table id="datatable"
+                                           class="table table-bordered dt-responsive nowrap table-striped align-middle hover"
+                                           style="width:100%">
+                                        <thead>
+                                        <tr>
+                                            <th scope="col">主題名稱</th>
+                                            <th scope="col">夢境數量</th>
+                                            <th scope="col">開放否</th>
+                                            <th scope="col">動作</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- End Row -->
+
+                <!-- NEW and EDIT Modal -->
+                <div class="modal fade" id="NewAndEditModal" role="dialog">
+                    {% csrf_token %}
+                    <div class="modal-dialog">
+                        <!-- Modal content-->
+                        <div class="modal-content">
+                            <form class="form-group" role="form">
+                                <div class="modal-header">
+                                    <h3 class="modal-title" id="modal_title"></h3>
+                                    <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button">
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="row g-3">
+                                        <div class="col-md-12 form-group">
+                                            <label for="title">主題名稱</label><span class="text-danger ml-1"
+                                                                                      style="color:red"> *</span>
+                                            <input type="text" class="form-control" id="title" name="title"
+                                                   placeholder="主題名稱" required maxlength="120">
+                                        </div>
+                                        <div class="col-md-12 form-group">
+                                            <label for="folder_enable">開放否</label>
+                                            <select class="form-control form-select" id="folder_enable" name="folder_enable" required>
+                                                <option value="true" selected>開放</option>
+                                                <option value="false">不開放</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <input type="hidden" id="type" name="type" value="">
+                                <input type="hidden" id="create_user" name="create_user"
+                                       value="{{ request.user.first_name }}">
+                                <input type="hidden" id="last_modified_user" name="last_modified_user"
+                                       value="{{ request.user.first_name }}">
+                                <div class="modal-footer">
+                                    <button type="submit" class="btn ripple btn-primary"><i class="bx bx-save"></i> 存檔
+                                    </button>
+                                    <button class="btn ripple btn-light" data-bs-dismiss="modal" type="button"><i
+                                            class="ri-close-line"></i> 取消
+                                    </button>
+                                </div>
+                            </form>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Delete Modal -->
+                <div class="modal fade" id="DeleteModal" role="dialog">
+                    <div class="modal-dialog">
+                        <!-- Modal content-->
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h4 class="modal-title"><i class="fa fa-trash-alt modal-icon text-danger"> 刪除</i></h4>
+                                <small class="modal-subtitle"></small>
+                                <button aria-label="Close" class="btn-close" data-bs-dismiss="modal"
+                                        type="button"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p class="lead">你確認要刪除主題: <strong id="delid"></strong>?</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn ripple btn-danger" data-dismiss="modal" id="delete"><i
+                                        class="bx bx-trash"></i> 刪除
+                                </button>
+                                <button type="button" class="btn ripple btn-light" data-bs-dismiss="modal"><i
+                                        class="ri-close-line"></i> 取消
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- End Page-content -->
+        </div>
+    </div>
+{% endblock content %}
+
+{% block extra_js %}
+    <!-- jquery -->
+    <script src="{% static 'libs/jquery/jquery-3.6.0.min.js' %}"></script>
+
+    <!--  Datatable js -->
+    <script src="{% static 'libs/datatable/js/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'libs/datatable/js/dataTables.bootstrap5.min.js' %}"></script>
+    <script src="{% static 'libs/datatable/js/dataTables.buttons.min.js' %}"></script>
+    <script src="{% static 'libs/datatable/js/dataTables.responsive.min.js' %}"></script>
+
+    <!-- sweetalert2 js-->
+    <script src="{% static 'libs/sweetalert2/dist/sweetalert2.all.min.js' %}"></script>
+    <script src="{% static 'js/inits/sweetalert2.init.js' %}"></script>
+
+    <!-- dream folder init -->
+    <script src="{% static 'js/inits/dream_folder.init.js' %}?v=202604190955"></script>
+{% endblock extra_js %}

@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8">
+    <title>8585 報修系統</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+    <div class="container mt-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>🛠️ 8585 報修列表</h2>
+            <a href="{% url 'repair_create' %}" class="btn btn-success mb-3">+ 我要報修</a>
+            <form class="d-flex" method="GET" action="">
+                <input class="form-control me-2" type="search" name="q" placeholder="搜尋姓名或地點..."
+                    value="{{ request.GET.q }}">
+                <button class="btn btn-outline-primary" type="submit">搜尋</button>
+            </form>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>姓名</th>
+                            <th>地點</th>
+                            <th>描述</th>
+                            <th>狀態</th>
+                            <th>報修時間</th>
+                            <th>圖片/影片</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for repair in repairs %}
+                        <tr>
+                            <!-- <td>{{ repair.id }}</td> -->
+                            <!-- <td><a href="{% url 'repair_detail' repair.id %}">{{ repair.id }}</a></td> -->
+                            <td>
+                                <a href="{% url 'repair_detail' repair.id %}" class="btn btn-sm btn-outline-primary">
+                                    查看 #{{ repair.id }}
+                                </a>
+                            </td>
+                            <td>{{ repair.username }}</td>
+                            <td>{{ repair.location }}</td>
+                            <td>{{ repair.description|truncatechars:30 }}</td>
+                            <td>
+                                {% if repair.status == '已完成' %}
+                                <span class="badge bg-success">已完成</span>
+                                {% else %}
+                                <span class="badge bg-warning text-dark">{{ repair.status }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ repair.created_at|date:"Y-m-d H:i" }}</td>
+                            <td>
+    <div class="d-flex flex-wrap gap-1" style="max-width: 180px;">
+        {% for file in repair.files.all %}
+            {% if ".mp4" in file.file_path.name|lower or ".mov" in file.file_path.name|lower %}
+                <div class="bg-dark rounded d-flex align-items-center justify-content-center"
+                     style="width: 45px; height: 45px; cursor: pointer;"
+                     data-bs-toggle="modal"
+                     data-bs-target="#imageModal"
+                     data-type="video"
+                     data-src="/media/{{ file.file_path }}">
+                    <small class="text-white" style="font-size: 10px;">📹</small>
+                </div>
+            {% else %}
+                <img src="/media/{{ file.file_path }}"
+                     style="width: 45px; height: 45px; object-fit: cover; cursor: pointer;"
+                     class="rounded border thumb-img"
+                     data-bs-toggle="modal"
+                     data-bs-target="#imageModal"
+                     data-type="image"
+                     data-src="/media/{{ file.file_path }}">
+            {% endif %}
+        {% endfor %}
+    </div>
+</td>
+                            <td>
+                                <div class="d-grid gap-2">
+                                    <a href="{% url 'repair_edit' repair.id %}"
+                                        class="btn btn-sm btn-secondary text-white">
+                                        🖋️ 編輯
+                                    </a>
+                                    <a href="{% url 'repair_delete' repair.id %}" class="btn btn-sm btn-danger">
+                                        🗑️ 刪除
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-4">查無資料</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+
+
+                  {% if ".mp4" in file.file_path.name|lower or ".mov" in file.file_path.name|lower %}
+    <div class="bg-dark rounded d-flex align-items-center justify-content-center"
+         style="width: 45px; height: 45px; cursor: pointer;"
+         data-bs-toggle="modal"
+         data-bs-target="#imageModal"
+         data-type="video"
+         data-src="/media/{{ file.file_path }}">
+        <small class="text-white" style="font-size: 10px;">📹</small>
+    </div>
+{% else %}
+    <img src="/media/{{ file.file_path }}"
+         style="width: 45px; height: 45px; object-fit: cover; cursor: pointer;"
+         class="rounded border thumb-img"
+         data-bs-toggle="modal"
+         data-bs-target="#imageModal"
+         data-type="image"
+         data-src="/media/{{ file.file_path }}">
+{% endif %}
+
+<div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content bg-dark border-0">
+            <div class="modal-header border-0 pb-0">
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-3 text-center">
+                <img src="" id="modalImage" class="img-fluid rounded d-none" style="max-height: 80vh;">
+
+                <video id="modalVideo" controls class="img-fluid rounded d-none" style="max-height: 80vh;">
+                    <source src="" type="video/mp4">
+                    您的瀏覽器不支援影片播放。
+                </video>
+            </div>
+        </div>
+    </div>
+</div>
+
+                    <div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content bg-transparent border-0">
+            <div class="modal-body p-0 text-center">
+                <img src="" id="modalImage" class="img-fluid rounded shadow" style="max-height: 90vh;">
+                <div class="mt-2">
+                    <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">關閉視窗</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var imageModal = document.getElementById('imageModal');
+    var modalImage = document.getElementById('modalImage');
+    var modalVideo = document.getElementById('modalVideo');
+
+    imageModal.addEventListener('show.bs.modal', function (event) {
+        var trigger = event.relatedTarget;
+        var type = trigger.getAttribute('data-type');
+        var src = trigger.getAttribute('data-src');
+
+        // 先全部隱藏並停止影片
+        modalImage.classList.add('d-none');
+        modalVideo.classList.add('d-none');
+        modalVideo.pause();
+
+        if (type === 'video') {
+            modalVideo.src = src;
+            modalVideo.classList.remove('d-none');
+            modalVideo.load(); // 重新載入影片源
+        } else {
+            modalImage.src = src;
+            modalImage.classList.remove('d-none');
+        }
+    });
+
+    // 當 Modal 關閉時停止影片播放
+    imageModal.addEventListener('hidden.bs.modal', function () {
+        modalVideo.pause();
+        modalVideo.src = "";
+    });
+});
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    function showImage(src) {
+        document.getElementById('modalImage').src = src;
+    }
+</script>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

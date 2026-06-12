@@ -1,0 +1,388 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+{% block title %}選單管理{% endblock title %}
+
+{% block extra_css %}
+    <!--datatable css-->
+    <link href="{% static 'libs/datatable/css/dataTables.bootstrap5.min.css' %}" rel="stylesheet"/>
+    <link href="{% static 'libs/datatable/css/dataTables.dataTables.css' %}" rel="stylesheet"/>
+
+    <!--datatable button css-->
+    <link href="{% static 'libs/datatable/css/buttons.dataTables.min.css' %}" rel="stylesheet"/>
+
+    <!--datatable responsive css-->
+    <link href="{% static 'libs/datatable/css/responsive.bootstrap.min.css' %}" rel="stylesheet"/>
+
+    <!-- SweetAlert2 css-->
+    <link href="{% static 'libs/sweetalert2/dist/sweetalert2.min.css' %}" rel="stylesheet">
+
+    <!-- icon css -->
+    <link href="{% static 'iconfonts/fontawesome/fontawesome-all.min.css' %}" rel="stylesheet" type="text/css"/>
+
+    <!-- select2 -->
+    <link href="{% static 'libs/select2/dist/select2.min.css' %}" rel="stylesheet" type="text/css"/>
+
+
+{% endblock extra_css %}
+
+{% block content %}
+    <div class="main-content">
+        <div class="page-content">
+            <div class="container-fluid">
+                {% block pagetitle %}
+                    {% include "partials/page-title.html" with pagetitle="後台管理" title="選單管理" %}
+                {% endblock pagetitle %}
+                <!-- Row -->
+                <div class="row row-sm">
+                    <div class="col-lg-12">
+                        <div class="card custom-card">
+                            <div class="card-body">
+                                <div>
+                                    <button type="button" class="btn btn-primary" id="new" data-bs-toggle="modal"
+                                            data-bs-target="#NewAndEditModal" title="新增"><i class="ri-add-line"></i>
+                                        新增
+                                    </button>
+                                    &nbsp
+                                    <p></p>
+                                </div>
+                                <div class="table-responsive ">
+                                    <table id="datatable"
+                                           class="table table-bordered dt-responsive nowrap table-striped align-middle hover"
+                                           style="width:100%">
+                                        <thead>
+                                        <tr>
+                                            <th scope="col">主選單名稱</th>
+                                            <th scope="col">主選單排序</th>
+                                            <th scope="col">次選單名稱</th>
+                                            <th scope="col">選單url</th>
+                                            <th scope="col">次選單排序</th>
+                                            <th scope="col">動作</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- End Row -->
+
+                <!-- NEW and EDIT Modal -->
+                <div class="modal fade" id="NewAndEditModal" role="dialog">
+                    {% csrf_token %}
+                    <div class="modal-dialog">
+                        <!-- Modal content-->
+                        <div class="modal-content">
+                            <form class="form-group" role="form">
+                                <div class="modal-header">
+                                    <h3 class="modal-title" id="modal_title"></h3>
+                                    <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button">
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="row g-3">
+                                        <div class="col-md-12 form-group">
+                                            <label for="menu_1st">主選單名稱</label><span class="text-danger ml-1"
+                                                                                          style="color:red"> *</span>
+                                            <input type="text" class="form-control" id="menu_1st" name="menu_1st"
+                                                   placeholder="主選單名稱" required>
+
+                                        </div>
+                                        <div class="col-md-12 form-group">
+                                            <select class="form-control form-select" id="menu_1st_select" name="menu_1st_select">
+                                                <option selected value="">請選擇主選單名稱</option>
+                                                {% for menu_item in qsMenu %}
+                                                    <option value="{{ menu_item.menu_1st }}"
+                                                            data-icon="{{ menu_item.menu_1st_icon }}"
+                                                            data-sort="{{ menu_item.menu_1st_sort }}">
+                                                        {{ menu_item.menu_1st }}
+                                                    </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="col-md-12 form-group">
+                                            <label for="menu_1st_icon">主選單icon</label><span class="text-danger ml-1"
+                                                                                               style="color:red"> *</span>
+                                            <input type="text" class="form-control" id="menu_1st_icon"
+                                                   name="menu_1st_icon"
+                                                   placeholder="主選單icon" required>
+                                        </div>
+                                        <div class="col-md-12 form-group">
+                                            <label for="menu_1st_sort">主選單排序</label><span class="text-danger ml-1"
+                                                                                               style="color:red"> *</span>
+                                            <input type="number" class="form-control" id="menu_1st_sort"
+                                                   name="menu_1st_sort"
+                                                   placeholder="主選單排序" required>
+                                        </div>
+                                        <div class="col-md-12 form-group">
+                                            <label for="menu_2st">次選單名稱</label>
+                                            <input type="text" class="form-control" id="menu_2st" name="menu_2st"
+                                                   placeholder="次選單名稱">
+                                        </div>
+                                        <div class="col-md-12 form-group">
+                                            <label for="menu_2st_url">選單url</label>
+                                            <input type="text" class="form-control" id="menu_2st_url"
+                                                   name="menu_2st_url"
+                                                   placeholder="選單url">
+                                        </div>
+                                        <div class="col-md-12 form-group">
+                                            <label for="report_url">報表url</label><span class="text-danger ml-1 report-url-required" style="color:red"> *</span>
+                                            <input type="text" class="form-control" id="report_url"
+                                                   name="report_url"
+                                                   placeholder="報表url">
+                                        </div>
+                                        <div class="col-md-12 form-group">
+                                            <label for="menu_2st_sort">次選單排序</label>
+                                            <input type="number" class="form-control" id="menu_2st_sort"
+                                                   name="menu_2st_sort"
+                                                   placeholder="次選單排序">
+                                        </div>
+                                    </div>
+                                </div>
+                                <input type="hidden" id="type" name="type" value="">
+                                <input type="hidden" id="create_user" name="create_user"
+                                       value="{{ request.user.username }}">
+                                <input type="hidden" id="last_modified_user" name="last_modified_user"
+                                       value="{{ request.user.username }}">
+                                <div class="modal-footer">
+                                    <button type="submit" class="btn ripple btn-primary"><i class="bx bx-save"></i> 存檔
+                                    </button>
+                                    <button class="btn ripple btn-light" data-bs-dismiss="modal" type="button"><i
+                                            class="ri-close-line"></i> 取消
+                                    </button>
+                                </div>
+                            </form>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Delete Modal -->
+                <div class="modal fade" id="DeleteModal" role="dialog">
+                    <div class="modal-dialog">
+                        <!-- Modal content-->
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h4 class="modal-title"><i class="fa fa-trash-alt modal-icon text-danger"> 刪除</i></h4>
+                                <small class="modal-subtitle"></small>
+                                <button aria-label="Close" class="btn-close" data-bs-dismiss="modal"
+                                        type="button"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p class="lead">你確認要刪除: <strong id="delid"></strong>?</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn ripple btn-danger" data-dismiss="modal" id="delete"><i
+                                        class="bx bx-trash"></i> 刪除
+                                </button>
+                                <button type="button" class="btn ripple btn-light" data-bs-dismiss="modal"><i
+                                        class="ri-close-line"></i> 取消
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- End Page-content -->
+        </div>
+    </div>
+{% endblock content %}
+
+{% block extra_js %}
+    <!-- jquery -->
+    <script src="{% static 'libs/jquery/jquery-3.6.0.min.js' %}"></script>
+
+    <!--  Datatable js -->
+    <script src="{% static 'libs/datatable/js/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'libs/datatable/js/dataTables.bootstrap5.min.js' %}"></script>
+    <script src="{% static 'libs/datatable/js/dataTables.buttons.min.js' %}"></script>
+    <script src="{% static 'libs/datatable/js/dataTables.responsive.min.js' %}"></script>
+
+    <!-- sweetalert2 js-->
+    <script src="{% static 'libs/sweetalert2/dist/sweetalert2.all.min.js' %}"></script>
+    <script src="{% static 'js/inits/sweetalert2.init.js' %}"></script>
+
+    <!-- datatable init -->
+    <script>
+        let baseUrl = '/commons/menu/';
+
+        let table = $('#datatable').DataTable({
+            'processing': true,
+            'serverSide': true,
+            'responsive': false,
+            'language': {url: '{% static 'libs/datatable/zh-HANT.json' %}'},
+            'ajax': {
+                url: baseUrl,
+                type: 'GET',
+            },
+            'columns': [
+                {"data": "menu_1st"},
+                {"data": "menu_1st_sort"},
+                {"data": "menu_2st"},
+                {"data": "menu_2st_url"},
+                {"data": "menu_2st_sort"},
+                {
+                    "data": null,
+                    "orderable": false,
+                    "defaultContent":
+                        '<div class="dropdown d-inline-block">' +
+                        '<button class="btn btn-soft-secondary btn-sm dropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false">' +
+                        '<i class="ri-more-fill align-middle"></i> ' +
+                        '</button> ' +
+                        '<ul class="dropdown-menu dropdown-menu-end">' +
+                        '<li class="dropdown-item edit-item-btn" data-bs-toggle="modal" data-bs-target="#NewAndEditModal" title="修改"><i class="ri-pencil-fill align-bottom me-2 text-muted"></i> 修改</li> ' +
+                        '<li class="dropdown-item remove-item-btn" data-bs-toggle="modal" data-bs-target="#DeleteModal" title="刪除"><i class="ri-delete-bin-fill align-bottom me-2 text-muted"></i> 刪除</li> ' +
+                        '</ul>' +
+                        '</div>'
+                }
+            ],
+            'order': [[2, 'asc'], [5, 'asc']]
+        });
+    </script>
+
+    <!-- CRUD -->
+    <script>
+        let id = 0;
+
+        $(document).ready(function () {
+            // 點選修改或刪除
+            $('#datatable tbody').on('click', '.edit-item-btn, .remove-item-btn', function () {
+                let data = table.row($(this).parents('tr')).data();
+                if (data === undefined) {
+                    let datanum = table.row($(this))['0'][0];
+                    data = table.row($(this).parents('tr')).context[0].aoData[datanum]._aData;
+                }
+                id = data['id'];
+
+                if ($(this).hasClass('edit-item-btn')) {
+                    // 修改
+                    $('#menu_1st').val(data['menu_1st']);
+                    $('#menu_1st_icon').val(data['menu_1st_icon']);
+                    $('#menu_1st_sort').val(data['menu_1st_sort']);
+                    $('#menu_2st').val(data['menu_2st']);
+                    $('#menu_2st_url').val(data['menu_2st_url']);
+                    $('#report_url').val(data['report_url']);
+                    $('#menu_2st_sort').val(data['menu_2st_sort']);
+                    $('#type').val('EDIT');
+                    $('#modal_title').html('<i class="fas fa-edit modal-icon text-info"> 修改</i>');
+
+                    // 如果menu_2st_url的值有showreport時
+                    if (data['menu_2st_url'] && data['menu_2st_url'].includes('showreport')) {
+                        $('#report_url').prop('required', true).closest('.form-group').show();
+                        $('.report-url-required').show();
+                    } else {
+                        $('#report_url').prop('required', false).closest('.form-group').hide();
+                        $('.report-url-required').hide();
+                    }
+                } else {
+                    // 刪除
+                    $('#delid').text(data['menu_1st']);
+                }
+            });
+
+            // 新增或修改存檔
+            $('form').on('submit', function (e) {
+                e.preventDefault();
+
+                // If menu_2st_url is 'showreport_local', ensure report_url ends with '?rs:embed=true'
+                const menu2stUrlInput = $('#menu_2st_url');
+                const reportUrlInput = $('#report_url');
+
+                if (menu2stUrlInput.val().includes('showreport_local')) {
+                    let reportUrl = reportUrlInput.val();
+                    if (reportUrl && !reportUrl.includes('?rs:embed=true')) {
+                        reportUrlInput.val(reportUrl + '?rs:embed=true');
+                    }
+                }
+
+                let url = baseUrl;
+                let method = $('#type').val() === 'NEW' ? 'POST' : 'PUT';
+                if (method === 'PUT') url += id + '/';
+
+                $.ajax({
+                    headers: {"X-CSRFToken": '{{ csrf_token }}'},
+                    url: url,
+                    method: method,
+                    data: $(this).serialize(),
+                    success: function () {
+                        table.ajax.reload(null, false);
+                        $("#NewAndEditModal").modal('hide');
+                        Toast.fire({icon: 'success', title: '存檔成功'});
+                    },
+                    error: function (jqXHR) {
+                        let errorMessage = jqXHR.responseJSON;
+                        Toast.fire({icon: 'error', title: errorMessage});
+                        console.log(jqXHR);
+                    }
+                });
+            });
+
+            // 刪除
+            $('#DeleteModal').on('click', '#delete', function () {
+                $.ajax({
+                    headers: {"X-CSRFToken": '{{ csrf_token }}'},
+                    url: baseUrl + id + '/',
+                    method: 'DELETE',
+                    success: function () {
+                        table.ajax.reload(null, false);
+                        $("#DeleteModal").modal('hide');
+                        Toast.fire({icon: 'success', title: '刪除成功'});
+                    },
+                    error: function (jqXHR) {
+                        Toast.fire({icon: 'error', title: '刪除失敗'});
+                        console.log(jqXHR);
+                    }
+                });
+            });
+
+            // 新增
+            $('#new').on('click', function () {
+                $('#menu_1st,#menu_1st_icon,#menu_1st_sort,#menu_2st,#menu_2st_url,#menu_2st_sort,#report_url').val('');
+                $('#type').val('NEW');
+                $('#modal_title').html('<i class="fa fa-plus modal-icon text-primary"> 新增</i>');
+                $('#report_url').prop('required', false).closest('.form-group').hide(); // Hide on new by default
+                $('.report-url-required').hide();
+            });
+        });
+    </script>
+
+    <!-- Listener -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // 監聽 menu_1st_select 的變更事件
+            const menuSelect = document.getElementById('menu_1st_select');
+            const menu1stInput = document.getElementById('menu_1st');
+            const menuIconInput = document.getElementById('menu_1st_icon');
+            const menuSortInput = document.getElementById('menu_1st_sort');
+
+            menuSelect.addEventListener('change', function () {
+                const selectedOption = menuSelect.options[menuSelect.selectedIndex];
+                // 設定相關欄位值
+                menu1stInput.value = selectedOption.value; // 主選單名稱
+                menuIconInput.value = selectedOption.getAttribute('data-icon'); // 主選單icon
+                menuSortInput.value = selectedOption.getAttribute('data-sort'); // 主選單排序
+            });
+
+            // 監聽 menu_2st_url 的輸入事件
+            const menu2stUrlInput = document.getElementById('menu_2st_url');
+            const reportUrlGroup = document.getElementById('report_url').closest('.form-group');
+            const reportUrlInput = document.getElementById('report_url');
+            const reportUrlRequired = document.querySelector('.report-url-required');
+
+            menu2stUrlInput.addEventListener('input', function () {
+                // 如果 "選單url" 包含 "showreport", 則顯示 "報表url" 欄位, 否則隱藏
+                if (this.value.includes('showreport')) {
+                    reportUrlGroup.style.display = 'block';
+                    reportUrlInput.required = true;
+                    reportUrlRequired.style.display = 'inline';
+                } else {
+                    reportUrlGroup.style.display = 'none';
+                    reportUrlInput.required = false;
+                    reportUrlRequired.style.display = 'none';
+                }
+            });
+        });
+    </script>
+{% endblock extra_js %}

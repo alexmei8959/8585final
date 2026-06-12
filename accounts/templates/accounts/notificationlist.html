@@ -1,0 +1,151 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+{% block title %}通知訊息{% endblock title %}
+
+{% block extra_css %}
+    <link href="{% static 'libs/datatable/css/dataTables.bootstrap5.min.css' %}" rel="stylesheet"/>
+    <link href="{% static 'libs/datatable/css/dataTables.dataTables.css' %}" rel="stylesheet"/>
+    <link href="{% static 'libs/datatable/css/responsive.bootstrap.min.css' %}" rel="stylesheet"/>
+    <link href="{% static 'libs/sweetalert2/dist/sweetalert2.min.css' %}" rel="stylesheet">
+    <style>
+        tr.unread-row {
+            background-color: #eef4ff !important;
+            font-weight: 500;
+        }
+    </style>
+{% endblock extra_css %}
+
+{% block content %}
+    <div class="main-content">
+        <div class="page-content">
+            <div class="container-fluid">
+                {% block pagetitle %}
+                    {% include "partials/page-title.html" with title="訊息中心" %}
+                {% endblock pagetitle %}
+
+                <div class="row row-sm">
+                    <div class="col-lg-12">
+                        <div class="card custom-card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="card-title mb-0">通知列表</h5>
+                                <button type="button" class="btn btn-soft-primary btn-sm" id="markAllReadBtn">
+                                    <i class="ri-check-double-line align-bottom me-1"></i> 全部標記已讀
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table id="datatable_notifications"
+                                           class="table table-bordered dt-responsive nowrap table-striped align-middle hover"
+                                           style="width:100%">
+                                        <thead>
+                                        <tr>
+                                            <th scope="col">時間</th>
+                                            <th scope="col">發送者</th>
+                                            <th scope="col">訊息內容</th>
+                                            <th scope="col">狀態</th>
+                                            <th scope="col">動作</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}
+
+{% block extra_js %}
+    <script src="{% static 'libs/jquery/jquery-3.6.0.min.js' %}"></script>
+    <script src="{% static 'libs/datatable/js/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'libs/datatable/js/dataTables.bootstrap5.min.js' %}"></script>
+    <script src="{% static 'libs/datatable/js/dataTables.responsive.min.js' %}"></script>
+    <script src="{% static 'libs/sweetalert2/dist/sweetalert2.all.min.js' %}"></script>
+    <script src="{% static 'js/inits/sweetalert2.init.js' %}"></script>
+
+    <script>
+        const baseUrl = '/accounts/notification/';
+        const csrfToken = '{{ csrf_token }}';
+        let table;
+
+        $(document).ready(function () {
+            table = $('#datatable_notifications').DataTable({
+                processing: true,
+                serverSide: true,
+                language: {url: '{% static 'libs/datatable/zh-HANT.json' %}'},
+                ajax: {
+                    url: baseUrl,
+                    type: 'GET',
+                    dataSrc: 'data'
+                },
+                columns: [
+                    {data: 'create_date', render: function (data) { return data ? data.substring(0, 16) : ''; }},
+                    {data: 'notifier_username'},
+                    {data: 'message'},
+                    {
+                        data: 'is_read',
+                        render: function (data) {
+                            if (data) {
+                                return '<span class="badge bg-secondary">已讀</span>';
+                            }
+                            return '<span class="badge bg-primary">未讀</span>';
+                        }
+                    },
+                    {
+                        data: null,
+                        orderable: false,
+                        render: function (data) {
+                            if (data.is_read) {
+                                return '<span class="text-muted">-</span>';
+                            }
+                            return '<button class="btn btn-soft-success btn-sm mark-read-btn" data-id="' + data.id + '">' +
+                                '<i class="ri-check-line align-bottom me-1"></i>標記已讀</button>';
+                        }
+                    }
+                ],
+                order: [[0, 'desc']],
+                createdRow: function (row, data) {
+                    if (!data.is_read) {
+                        $(row).addClass('unread-row');
+                    }
+                }
+            });
+
+            // 單筆標記已讀
+            $('#datatable_notifications tbody').on('click', '.mark-read-btn', function () {
+                const id = $(this).data('id');
+                $.ajax({
+                    headers: {'X-CSRFToken': csrfToken},
+                    url: baseUrl + id + '/mark_read/',
+                    method: 'POST',
+                    success: function () {
+                        table.ajax.reload(null, false);
+                        Toast.fire({icon: 'success', title: '已標記為已讀'});
+                    },
+                    error: function () {
+                        Toast.fire({icon: 'error', title: '操作失敗'});
+                    }
+                });
+            });
+
+            // 全部標記已讀
+            $('#markAllReadBtn').on('click', function () {
+                $.ajax({
+                    headers: {'X-CSRFToken': csrfToken},
+                    url: baseUrl + 'mark_all_read/',
+                    method: 'POST',
+                    success: function () {
+                        table.ajax.reload(null, false);
+                        Toast.fire({icon: 'success', title: '全部已標記為已讀'});
+                    },
+                    error: function () {
+                        Toast.fire({icon: 'error', title: '操作失敗'});
+                    }
+                });
+            });
+        });
+    </script>
+{% endblock extra_js %}
